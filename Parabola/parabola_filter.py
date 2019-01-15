@@ -70,11 +70,11 @@ def trajectory(locs, min_ball_size, max_ball_size):
         loc = locs[i]
         start_frame = i
         if start_frame + 3 >= len(locs):
-            i+=1
+            i += 1
             continue
         _, _, w, h = loc
         if not ball_size_filter(max_ball_size, min_ball_size, w, h):
-            i+=1
+            i += 1
             continue
         flag, traject = init_traject(start_frame, locs, max_ball_size, min_ball_size)
         if not flag:

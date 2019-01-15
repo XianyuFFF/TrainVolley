@@ -462,9 +462,12 @@ def load_mask_rnn():
 
 
 class Candidate:
-    def __init__(self, region, score_):
-        self.region = region
+    def __init__(self, center, size, score_):
+        self.center = center
+        self.size = size
         self.score = score_
+        self.link_number = 0
+        self.previous = None
 
 
 if __name__ == '__main__':
@@ -518,4 +521,9 @@ if __name__ == '__main__':
             frame_different_region = ball_moments.find_loc(frame)
 
             candidates.append(Candidate(frame_different_region, 0.7))
+
+
+
+
+
 
