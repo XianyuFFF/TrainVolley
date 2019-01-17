@@ -28,6 +28,11 @@ class Trajectory:
             ball_position.reconstruct3d(cams, fundamental_matrix)
 
 
+    #def optimize(self):
+# TODO
+
+
+
 class BallPosition:
     def __init__(self):
         self.ball_cordiante_2ds = {}

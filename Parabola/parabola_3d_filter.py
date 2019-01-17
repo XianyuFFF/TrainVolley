@@ -11,7 +11,7 @@ def loc_dis(loc1, loc2):
 def ground_check(traj):
     for loc in traj:
         x, y, z = loc
-        if z > 400:
+        if z > 120:
             return False
     return True
 
@@ -49,6 +49,15 @@ def predict_new_pose(locs):
         return new_x, new_y, new_z
     except NameError as e:
         print(e)
+
+
+        
+
+
+
+
+
+
 
 
 def parabola_3d_locs(init_3d_locs):
