@@ -30,7 +30,7 @@ class Moments:
         cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
         if not init_feature:
-            cnts = list(filter(is_prop_region, cnts))
+            cnts = list(filter(self.is_prop_region, cnts))
 
         for c in cnts:
             mask = np.zeros(image.shape[:2], dtype="uint8")

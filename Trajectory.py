@@ -5,6 +5,5 @@ Ball_State = {"possessed", "fly", "beat", "ground", "net", "roll", "toss"}
 
 
 class Trajectory:
-    def __init__(self, start_time, delta_time):
-        self.start_time = start_time
-        self.delta_time = delta_time
+    def __init__(self):
+        pass
