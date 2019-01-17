@@ -1,18 +1,20 @@
 import numpy as np
 import cv2
+import json
 
 
 class CameraMatrix:
-    def __init__(self, K, R, T, dist_coefs):
+    def __init__(self, K, r_vec, t_vec, dist_coefs):
         self.K = np.array(K, dtype=np.float32)
-        self.R = np.array(R, dtype=np.float32)
-        self.T = np.array(T, dtype=np.float32)
+        self.r_vec = np.array(r_vec, dtype=np.float32)
+        self.t_vec = np.array(t_vec, dtype=np.float32)
         self.dist_coefs = np.array([], dtype=np.float32)
         self.proj_mat = self.init_project_mat()
 
     def init_project_mat(self):
-        m = np.dot(self.K, self.R)
-        t = np.dot(self.K, self.T)
+        R, _ = cv2.Rodrigues(self.r_vec)
+        m = np.dot(self.K, R)
+        t = np.dot(self.K, self.t_vec)
         rt_mat = np.matrix([
             [m[0, 0], m[0, 1], m[0, 2], t[0, 0]],
             [m[1, 0], m[1, 1], m[1, 2], t[1, 0]],
@@ -27,12 +29,23 @@ class Camera:
         self.name = name
         self.camera_matrix = camera_matrix
 
+
+    def pack_json_camera(self, camera_info_json_dir):
+        with open(camera_info_json_dir, 'r') as f:
+            camera_info = json.load(f)
+        camera_matrix = camera_info['camera_matrix']
+        r_vec = camera_info['r_vet']
+        R, _ = cv2.Rodrigues(r_vec)
+        t_vec = camera_info['t_vet']
+        dist_coefs = camera_info['dist_coefs']
+        # dist_coefs = np.zeros((1, 5))
+        # if projection wrong,try switch dist_coefs to zeros
+        setattr(self, 'camera_matrix', CameraMatrix(camera_matrix, r_vec,t_vec, dist_coefs))
+
+
     def transto2d(self, points):
-        K = self.camera_matrix.K
-        r_vec, _ = cv2.Rodrigues(self.camera_matrix.R)
-        T = self.camera_matrix.T
-        dist_coefs = self.camera_matrix.dist_coefs
-        return cv2.projectPoints(points, r_vec, T, K, dist_coefs)
+        return cv2.projectPoints(points, self.camera_matrix.R, self.camera_matrix.T, self.camera_matrix.K,
+                                 self.camera_matrix.dist_coefs)
 
     def find_homograph_matrix(self, other_camera, plane_norm):
         K1 = np.asmatrix(self.camera_matrix.K)
