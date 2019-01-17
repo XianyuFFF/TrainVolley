@@ -46,9 +46,6 @@ class PlayerSkeleton:
                                                               )
                         )
 
-    def load_json_skeleton(self):
-        pass
-
     def json_format(self):
         return vars(self.pose_3d)
 

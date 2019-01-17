@@ -1,9 +1,8 @@
-import random
-from Skeleton import PlayerSkeleton
+from Player.Skeleton import PlayerSkeleton
 import os
 from pathlib import Path
 import json
-from Skeleton import Pose2d, openpose_pose_keys
+from Player.Skeleton import Pose2d
 
 
 class PlayerSkeletonSequence:
@@ -38,9 +37,8 @@ class PlayerSkeletonSequence:
 
 
 class Player:
-    def __init__(self, delta_time):
+    def __init__(self):
         self.player_skeletons = PlayerSkeletonSequence()
-        self.delta_time = delta_time
 
     def position_in_given_time(self, t):
         return

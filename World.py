@@ -1,7 +1,4 @@
-from Camera import Camera
-from Player import Player
-from Ball import Ball
-import os
+from Player.Player import Player
 from openpose_data import get_openpose_data
 from reconstruct import find_fundamental_matrix
 

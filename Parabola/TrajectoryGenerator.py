@@ -1,6 +1,7 @@
 import copy
 from scipy.optimize import curve_fit
 import json
+import cv2
 
 from Parabola.Candidate import Candidate
 from Parabola.Trajectory import Trajectory
@@ -12,20 +13,20 @@ class TraGenerator:
         self.duration = duration
         self.trajectorys = trajectorys
 
-    def check_trajectories_conflict(self):
-        for i, trajectory in enumerate(self.trajectorys[:-1]):
-            print(trajectory.start_frame)
-            if trajectory.start_frame + len(trajectory.tra_nodes) > self.trajectorys[i + 1].start_frame:
-                return False
-            if trajectory.start_frame > self.trajectorys[i + 1].start_frame:
-                return False
-        return True
+    # def check_trajectories_conflict(self):
+    #     for i, trajectory in enumerate(self.trajectorys[:-1]):
+    #         print(trajectory.start_frame)
+    #         if trajectory.start_frame + len(trajectory.ball_positions) > self.trajectorys[i + 1].start_frame:
+    #             return False
+    #         if trajectory.start_frame > self.trajectorys[i + 1].start_frame:
+    #             return False
+    #     return True
 
     def drop_useless_trajectory(self):
         remaind_trajectories = []
         for trajectory in self.trajectorys:
             if trajectory.start_frame < self.start_frame + self.duration and trajectory.start_frame + len(
-                    trajectory.tra_nodes) > self.start_frame:
+                    trajectory.ball_positions) > self.start_frame:
                 remaind_trajectories.append(trajectory)
         self.trajectories = remaind_trajectories
 
@@ -33,19 +34,21 @@ class TraGenerator:
         head_trajectory = self.trajectorys[0]
         tail_trajectory = self.trajectorys[-1]
 
-        assert head_trajectory.start_frame >= self.start_frame, "head_trajectory time wrong"
+        # print(head_trajectory.start_frame)
+        # print(self.start_frame)
+        # assert head_trajectory.start_frame >= self.start_frame, "head_trajectory time wrong"
         if head_trajectory.start_frame > self.start_frame:
             head_trajectory.generate(head_trajectory.start_frame - self.start_frame, direction="backward")
 
-        if tail_trajectory.start_frame + len(tail_trajectory.tra_nodes) < self.start_frame + self.duration:
+        if tail_trajectory.start_frame + len(tail_trajectory.ball_positions) < self.start_frame + self.duration:
             tail_trajectory.generate(
-                self.start_frame + self.duration - (tail_trajectory.start_frame + len(tail_trajectory.tra_nodes)),
+                self.start_frame + self.duration - (tail_trajectory.start_frame + len(tail_trajectory.ball_positions)),
                 direction="forward")
 
     def interpolate(self):
         generated_line_trajectories = []
         for pre_trajectory, rear_trajectory in zip(self.trajectorys[:-1], self.trajectorys[1:]):
-            if pre_trajectory.start_frame + len(pre_trajectory.tra_nodes) < rear_trajectory.start_frame:
+            if pre_trajectory.start_frame + len(pre_trajectory.ball_positions) < rear_trajectory.start_frame:
                 is_line_trajectory, line_trajectory = interpolate_two_trajectory(pre_trajectory, rear_trajectory)
                 if is_line_trajectory:
                     generated_line_trajectories.append(line_trajectory)
@@ -54,6 +57,40 @@ class TraGenerator:
         total_trajectories.extend(generated_line_trajectories)
         final_trajectories = sorted(total_trajectories, key=lambda x: x.start_frame)
         self.trajectories = final_trajectories
+
+
+    def show_result(self, video_name, save_result=False, res_video_name=None):
+        cap = cv2.VideoCapture(video_name)
+        if save_result is True:
+            width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            res_video = cv2.VideoWriter(res_video_name, fourcc, float(fps), (int(width), int(height)), True)
+
+        node_pools = []
+        for trajectory in self.trajectories:
+            for node in trajectory.ball_positions:
+               node_pools.append(node)
+        print("final node num: ", len(node_pools))
+
+        num = 0
+        i = 0
+
+        while True:
+            ret_, frame_ = cap.read()
+            if not ret_:
+                break
+            if self.start_frame + self.duration > num >= self.start_frame:
+                showed_node = node_pools[i]
+                res_frame = showed_node.show(frame_)
+                if save_result is True:
+                    res_video.write(res_frame)
+                # cv2.imshow("result", res_frame)
+                # cv2.waitKey(0)
+                i += 1
+            num += 1
 
     def result_json_format(self):
         start_time = self.start_frame
