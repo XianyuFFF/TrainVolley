@@ -1,7 +1,5 @@
-from reconstruct import transto3d
-from pathlib import Path
+from Reconstruct.reconstruct import transto3d
 import json
-import os
 from utils import path_parser
 
 # Need to split ball's state into "possessed", "fly" and "beat"
@@ -12,28 +10,22 @@ Ball_State = {"possessed", "fly", "beat", "ground", "net", "roll", "toss"}
 
 class Trajectory:
     def __init__(self):
-        self.ball_position_sequence = BallPositionSequence()
-        self.paths = []
-
-
-class BallPositionSequence:
-    def __init__(self):
         self.ball_position_sequence = {}
+        self.paths = []
 
     def pack_json_ball(self, video_dir, output_trajectory_path, cam_id):
         json_path = path_parser.detected_ball_json_dir(video_dir, output_trajectory_path, cam_id)
 
         data = json.load(open(json_path))
 
-        for frame_id, ball_info in data.items():
-            center = ball_info['center']
-            size = ball_info['size']
-            # score = value['score']
+        for frame_id, ball_center in data.items():
             current_ball_position = BallPosition()
-            current_ball_position.ball_cordiante_2ds[cam_id] = center
+            current_ball_position.ball_cordiante_2ds[cam_id] = ball_center
             self.ball_position_sequence[frame_id] = current_ball_position
 
-    # TODO def optimize(self):
+    def reconstruct(self, cams, fundamental_matrix):
+        for ball_position in self.ball_position_sequence.values():
+            ball_position.reconstruct3d(cams, fundamental_matrix)
 
 
 class BallPosition:

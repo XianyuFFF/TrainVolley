@@ -1,4 +1,4 @@
-from reconstruct import transto3d
+from Reconstruct.reconstruct import transto3d
 
 
 openpose_pose_keys = {0: "nose",

@@ -1,6 +1,9 @@
+from .Trajectory import Trajectory
+
+
 class Ball:
-    def __init__(self, trajectory):
-        self.trajectory = trajectory
+    def __init__(self):
+        self.trajectory = Trajectory()
 
     def fastest_speed(self):
         return

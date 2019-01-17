@@ -1,14 +1,11 @@
 import cv2
-import math
-import numpy as np
 # from moments import describe_shape, template_feature_match
 # import libbgs
 import MASK_RCNN.mrcnn.model as modellib
 import os
-from MASK_RCNN.coco import coco
 from MASK_RCNN.volleyball import VolleyballConfig
-from Moments import Moments
-from BgsModel import BgsModel
+from Detect.Moments import Moments
+from Detect import BgsModel
 from Parabola import Candidate, TrajectoryFilter, TraGenerator
 
 
