@@ -4,6 +4,8 @@ from scipy.signal import savgol_filter
 
 pd = pandas.read_csv('3d.gt', sep=' ', names=['order','x','y','z','p','s'])
 
+print(type(pd['x'].values))
+print(pd['x'].values)
 
 filter_x = savgol_filter(pd['x'].values, window_length=5, polyorder=1, mode='interp')
 filter_y = savgol_filter(pd['y'].values, window_length=5, polyorder=1, mode='interp')

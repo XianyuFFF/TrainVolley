@@ -34,14 +34,14 @@ class Camera:
         with open(camera_info_json_dir, 'r') as f:
             camera_info = json.load(f)
         camera_matrix = camera_info['camera_matrix']
-        r_vec = camera_info['r_vet']
+        r_vec = np.array(camera_info['r_vet'], dtype=np.float32)
         R, _ = cv2.Rodrigues(r_vec)
         t_vec = camera_info['t_vet']
         dist_coefs = camera_info['dist_coefs']
         # dist_coefs = np.zeros((1, 5))
         # if projection wrong,try switch dist_coefs to zeros
         setattr(self, 'camera_matrix', CameraMatrix(camera_matrix, r_vec,t_vec, dist_coefs))
-
+        setattr(self.camera_matrix, 'R', R)
 
     def transto2d(self, points):
         return cv2.projectPoints(points, self.camera_matrix.R, self.camera_matrix.T, self.camera_matrix.K,
@@ -54,8 +54,8 @@ class Camera:
         R1 = np.asmatrix(self.camera_matrix.R)
         R2 = np.asmatrix(other_camera.camera_matrix.R)
 
-        T1 = np.asmatrix(self.camera_matrix.T)
-        T2 = np.asmatrix(other_camera.camera_matrix.T)
+        T1 = np.asmatrix(self.camera_matrix.t_vec)
+        T2 = np.asmatrix(other_camera.camera_matrix.t_vec)
 
         R_1to2 = R2 * R1.T
         tvec_1to2 = R2 * (-R1.T * T1) + T2

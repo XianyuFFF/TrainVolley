@@ -3,9 +3,15 @@ import numpy as np
 
 
 def transto3d(image1_point, image2_point, camera1, camera2, funamental_matrix):
-    p1 = np.array(image1_point, dtype=np.float32).reshape((2, 1))
-    p2 = np.array(image2_point, dtype=np.float32).reshape((2, 1))
+    p1 = np.array(image1_point, dtype=np.float32).reshape((1,1, 2))
+    p2 = np.array(image2_point, dtype=np.float32).reshape((1,1, 2))
+    # print(funamental_matrix)
+
+    # print("before correctMatches: p1:{} p2:{}".format(p1, p2))
+
     p1, p2 = cv2.correctMatches(funamental_matrix, p1, p2)
+    # print("after correctMatches: p1:{} p2:{}".format(p1, p2))
+
     X = cv2.triangulatePoints(camera1.camera_matrix.proj_mat, camera2.camera_matrix.proj_mat, p1, p2)
     X /= X[3]
     X = X[:3].T.reshape((1, 3)).tolist()
@@ -19,8 +25,8 @@ def find_fundamental_matrix(camera1, camera2):
     R1 = camera1.camera_matrix.R
     R2 = camera2.camera_matrix.R
 
-    T1 = camera1.camera_matrix.T
-    T2 = camera2.camera_matrix.T
+    T1 = camera1.camera_matrix.t_vec
+    T2 = camera2.camera_matrix.t_vec
 
     R = np.matrix(R1) * np.matrix(R2).I
     t = -T2 + T1
@@ -31,8 +37,15 @@ def find_fundamental_matrix(camera1, camera2):
     E = _t * R
 
     F = np.matrix(K2).T.I * E * np.matrix(K1).I
-    # print(F)
-    return F
+
+    newF = []
+    for f in F.tolist():
+        for ff in f:
+            newF.append(float(ff))
+
+    newF = np.matrix(newF).reshape((3, 3))
+
+    return newF
 
 
 def get_homography_point(G, p):

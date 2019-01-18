@@ -1,6 +1,8 @@
 from Reconstruct.reconstruct import transto3d
 import json
 from utils import path_parser
+from scipy.signal import savgol_filter
+import numpy as np
 
 # Need to split ball's state into "possessed", "fly" and "beat"
 # if ball's movement is same as player's hand's movement, ball's state will be "possessed"
@@ -25,12 +27,24 @@ class Trajectory:
 
     def reconstruct(self, cams, fundamental_matrix):
         for ball_position in self.ball_position_sequence.values():
-            ball_position.reconstruct3d(cams, fundamental_matrix)
+            ball_position.reconstruct_3d(cams, fundamental_matrix)
 
+    def optimize(self):
+        X, Y, Z = [], [], []
+        for k in sorted(self.ball_position_sequence.keys()):
+            X.append(self.ball_position_sequence[k].position_3d[0])
+            Y.append(self.ball_position_sequence[k].position_3d[1])
+            Z.append(self.ball_position_sequence[k].position_3d[2])
 
-    #def optimize(self):
-# TODO
+        # TODO adjust window length
+        filter_x = savgol_filter(np.array(X), window_length=61, polyorder=1, mode='interp')
+        filter_y = savgol_filter(np.array(Y), window_length=61, polyorder=1, mode='interp')
+        filter_z = savgol_filter(np.array(Z), window_length=61, polyorder=2, mode='interp')
 
+        centers = list(zip(zip(filter_x,filter_y), filter_z))
+
+        for i, k in enumerate(self.ball_position_sequence.keys()):
+            self.ball_position_sequence[k].position_3d.center = centers[i]
 
 
 class BallPosition:
