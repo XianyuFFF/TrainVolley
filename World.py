@@ -10,7 +10,7 @@ Asset_path = 'asset'
 
 
 class World:
-    def __init__(self, cams, video_dirs, output_snippets_path, output_ballinfo_path, fps):
+    def __init__(self, cams, video_dirs, output_snippets_path, ball_work_path, fps):
         super(World, self).__init__()
         self.cams = cams
         self.fundamental_matrix = find_fundamental_matrix(*self.cams)
@@ -18,7 +18,7 @@ class World:
         self.output_snippets_path = output_snippets_path
         self.player = Player()
         self.ball = Ball()
-        self.output_ballinfo_path = output_ballinfo_path
+        self.ball_work_path = ball_work_path
 
     def detection_and_reconstruct(self):
 
@@ -30,11 +30,11 @@ class World:
 
             # detect stage
             get_openpose_data(video_dir, self.output_snippets_path)
-            get_ball_loc_data(video_dir, self.output_ballinfo_path, ball_moments, i)
+            get_ball_loc_data(video_dir, self.ball_work_path, ball_moments, i)
 
             # data loading
             self.player.player_skeletons.pack_json_skeleton(video_dir, self.output_snippets_path, i)
-            self.ball.trajectory.pack_json_ball(video_dir, self.output_ballinfo_path, i)
+            self.ball.trajectory.pack_json_ball(video_dir, self.ball_work_path, i)
 
         # 3d reconstruct
         self.player.player_skeletons.reconstruct(self.cams, self.fundamental_matrix)

@@ -1,9 +1,6 @@
 from pathlib import Path
 import json
 
-from pathlib import Path
-import json
-
 def json_pack(snippets_dir, video_name, frame_width, frame_height, label='unknown', label_index=-1):
     sequence_info = []
     p = Path(snippets_dir)

@@ -7,7 +7,7 @@ asset_path = "asset"
 
 def get_openpose_data(video_dir, output_snippets_path):
     video_name = video_dir[video_dir.rfind('/') + 1:].split('.')[0]
-    output_json_dir = os.path.join(output_snippets_path, "{}".format(video_name))
+    output_json_dir = os.path.join(output_snippets_path, "snippets", "{}".format(video_name))
     openpose_args = dict(
                 video=video_dir,
                 write_json=output_json_dir,
