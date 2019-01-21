@@ -1,4 +1,7 @@
+import numpy as np
+
 from Reconstruct.reconstruct import transto3d
+from utils.calculate import vector_angle
 
 
 openpose_pose_keys = {0: "nose",
@@ -46,6 +49,22 @@ class PlayerSkeleton:
                                                               )
                         )
 
+    def left_shoulder_angle(self):
+        forearm = np.asarray(getattr(self.pose_3d, 'left_elbow')) - np.asarray(getattr(self.pose_3d, 'left_shoulder'))
+        hindarm = np.asarray(getattr(self.pose_3d, 'left_wrist')) - np.asarray(getattr(self.pose_3d, 'left_elbow'))
+        return vector_angle(forearm, hindarm)
+
+    def right_shoulder_angle(self):
+        forearm = np.asarray(getattr(self.pose_3d, 'right_elbow')) - np.asarray(getattr(self.pose_3d, 'left_shoulder'))
+        hindarm = np.asarray(getattr(self.pose_3d, 'right_wrist')) - np.asarray(getattr(self.pose_3d, 'left_elbow'))
+        return vector_angle(forearm, hindarm)
+
+    def body_ground_angle(self):
+        neck = np.asarray(getattr(self.pose_3d, 'neck'))
+        mind_hip = np.asarray(getattr(self.pose_3d, 'mind_hip'))
+        ground = np.array([0, 0, 1])
+        return 90 - vector_angle(neck - mind_hip, ground)
+
     def json_format(self):
         return vars(self.pose_3d)
 
@@ -76,3 +95,10 @@ class Pose3d:
 
     def __str__(self):
         return " ".join(["{} : {}\n".format(name, value) for name, value in vars(self).items()])
+
+
+
+
+
+
+

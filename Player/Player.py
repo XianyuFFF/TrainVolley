@@ -10,7 +10,10 @@ class PlayerSkeletonSequence:
         self.skeletons = {}
 
     def sequence_based_time(self, begin_frame, end_frame):
-        return [skeleton.skeleton3d for skeleton in self.skeletons[begin_frame:end_frame]]
+        skeleton_sequence = []
+        for i in range(begin_frame, end_frame+1):
+            skeleton_sequence.append(self.skeletons[i])
+        return skeleton_sequence
 
     def reconstruct(self, cams, fundamental_matrix):
         for skeleton in self.skeletons.values():

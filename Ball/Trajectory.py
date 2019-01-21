@@ -46,6 +46,12 @@ class Trajectory:
         for i, k in enumerate(self.ball_position_sequence.keys()):
             self.ball_position_sequence[k].position_3d.center = centers[i]
 
+    def get_ball_loc_sequence(self, begin_frame, end_frame):
+        ball_loc_sequence = []
+        for i in range(begin_frame, end_frame+1):
+            ball_loc_sequence.append(self.ball_position_sequence[i])
+        return ball_loc_sequence
+
 
 class BallPosition:
     def __init__(self):
