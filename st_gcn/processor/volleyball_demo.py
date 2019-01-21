@@ -83,7 +83,7 @@ class Volleyball_Demo(IO):
 
         out = {"duration": T, "actions": label_names}
 
-        with open(self.arg.savejson_dir, 'w') as f:
+        with open(self.arg.action_json_dir, 'w') as f:
             json.dump(out, f)
 
     @staticmethod
@@ -103,6 +103,7 @@ class Volleyball_Demo(IO):
 
         parser.add_argument('--openpose_work_path', required=True, type=str)
         parser.add_argument('--label_name_dir', required=True, type=str)
+        parser.add_argument('--action_json_dir', required=Trur, type=str)
 
         parser.set_defaults(config='./config/st_gcn/vb14/cross_view/demo.yaml')
         parser.set_defaults(print_log=False)

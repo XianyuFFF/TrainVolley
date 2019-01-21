@@ -5,7 +5,6 @@ from Detect import Moments
 from Reconstruct.reconstruct import find_fundamental_matrix
 import os
 
-
 Asset_path = 'asset'
 
 
@@ -40,7 +39,10 @@ class World:
         self.player.player_skeletons.reconstruct(self.cams, self.fundamental_matrix)
         self.ball.trajectory.reconstruct(self.cams, self.fundamental_matrix)
 
-    def analyse(self):
+    def analyse(self, action_sequence):
+        merge_action_sequence(action_sequence)
+
+
         return {}
 
     def show_result(self):

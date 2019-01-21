@@ -4,11 +4,12 @@ from utils.path_parser import get_camera_info_dir
 from utils.openpose import json_pack
 import argparse
 import os
+import json
 
 Asset_path = 'asset'
 
-def main():
 
+def main():
     parser = argparse.ArgumentParser(
         description='Reconstruct and Analysis for volleyball training')
 
@@ -18,7 +19,7 @@ def main():
     parser.add_argument('--c2-video-dir', '-v2', type=str, default=os.path.join(Asset_path, 'video2.mp4'))
     parser.add_argument('--openpose-build', '-op', type=str,
                         default="/home/fyq/openpose/build/examples/openpose/openpose.bin")
-    parser.add_argument('--output_snippets_path', '-osp', type=str,
+    parser.add_argument('--openpose_work_path', '-owp', type=str,
                         default=os.path.join(Asset_path, 'openpose_data'))
 
     parser.add_argument('--ball-work-path', '-bwp', type=str,
@@ -45,12 +46,21 @@ def main():
     world = World(cams, video_dirs, args.output_snippets_path, args.ball_work_path, args.fps)
     world.detection_and_reconstruct()
 
-    for i, video_dir in enumerate(video_dirs):
+    # TODO merge action from different
+    # action judge model
+    # get a action sequence from openpose skeleton result
+    # the action sequence's length is same as the video frame length
+    action_json_dir = os.path.join(args.openpose_work__path, "actions.json")
+    video_dir = video_dirs[0]
+    video_name = video_dir[video_dir.rfind('/') + 1:].split('.')[0]
+    command_line = './st_gcn/st_gcn.py -vh 1080 -vw 1920 --video_name {} ' \
+                   '--openpose_work_path {} --label_name_dir {} --action_json_dir {}'.format(
+                    video_name, args.openpose_work_path, args.label_name_dir, action_json_dir)
+    os.system(command_line)
 
-        video_name = video_dir[video_dir.rfind('/') + 1:].split('.')[0]
-        command_line = './st_gcn/st_gcn.py -vh 1080 -vw 1920 --video_name {} --openpose_work_path {} --label_name_dir {}'
-        os.system(command_line)
+    action_sequence = json.load(open(action_json_dir, 'r'))['actions']
 
+    world.analyse(action_sequence)
 
 
 
