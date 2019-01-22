@@ -61,7 +61,7 @@ def main():
     action_sequence = json.load(open(action_json_dir, 'r'))['actions']
 
     world.analyse(action_sequence)
-
+    world.show_result()
 
 
 

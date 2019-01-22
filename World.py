@@ -25,6 +25,7 @@ class World:
         self.ball = Ball()
         self.ball_work_path = ball_work_path
         self.fps = fps
+        self.analysis_result = None
 
     def detection_and_reconstruct(self):
 
@@ -64,10 +65,7 @@ class World:
             anlysis_result = self.jump_floating_server_analysis(action)
 
 
-
-
     def underhand_server_anlysis(self, action):
-        action_result = {}
         start_frame = action.start_frame
         end_frame = action.start_frame
 
@@ -124,20 +122,16 @@ class World:
                        beat_ball_shoulder_angle, recover_shoulder_angle, throw_ball_body_ground_angle,
                        beat_ball_body_ground_angle, recover_body_ground_angle]
 
-        return ball_info, player_info
-
-
+        self.analysis_result = {
+            'ball_info': ball_info,
+            'player_info': player_info
+        }
 
     def jump_floating_server_analysis(self, action):
         action_result = {}
 
-
-
-
         return action_result
 
-
-
-
     def show_result(self):
+        # TODO dosomething_for(self.analysis_result)
         pass
