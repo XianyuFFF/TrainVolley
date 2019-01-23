@@ -1,0 +1,6 @@
+[
+    {"start":0, "duration":2, "text":"Hello"},
+    {"start":4.26, "duration":4, "text":"ello"},
+    {"start":2.25, "duration":2, "bgcolor":[0.5, 0.2, 0.4, 0.5], "text": "Action: UnderHand Server\n Throw_ball_time_cost: 1s \n Recover_shoulder_angle: 45"}
+
+]
