@@ -3,7 +3,6 @@ import os
 import libbgs
 
 
-
 class BgsModel:
     def __init__(self):
         ## BGS Library algorithms
