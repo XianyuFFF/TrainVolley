@@ -1,4 +1,3 @@
-import kivy
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.videoplayer import VideoPlayer
@@ -23,6 +22,6 @@ class e5App(App):
         return MyW(self.video_source)
 
 
-if __name__ == '__main__':
-    video_source = '../asset/pro.mp4'
-    e5App(video_source).run()
+# if __name__ == '__main__':
+#     video_source = '../asset/pro.mp4'
+#     e5App(video_source).run()

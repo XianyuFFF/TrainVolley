@@ -1,5 +1,5 @@
 from World import World
-from Reconstruct import Camera, calibrate
+from Reconstruct import Camera
 from utils.path_parser import get_camera_info_dir
 from utils.openpose import json_pack
 import argparse
@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--camera0-name', '-c0n', type=str, default='cam0')
     parser.add_argument('--camera1-name', '-c1n', type=str, default='cam1')
     parser.add_argument('--c0-video-dir', '-v0', type=str, default=os.path.join(Asset_path, 'video0.mp4'))
-    parser.add_argument('--c1-video-dir', '-v0', type=str, default=os.path.join(Asset_path, 'video1.mp4'))
+    parser.add_argument('--c1-video-dir', '-v1', type=str, default=os.path.join(Asset_path, 'video1.mp4'))
 
     parser.add_argument('--c0-cali-video', '-c0-cali', type=str, default=None)
     parser.add_argument('--c1-cali-video', '-c1-cali', type=str, default=None)
@@ -39,8 +39,8 @@ def main():
                         help='Output directory')
     args = parser.parse_args()
 
-    cam0 = Camera(0, args.camera0_name, camera_matrix=None, calibration_video=args.c0_video_dir)
-    cam1 = Camera(1, args.camera1_name, camera_matrix=None, calibration_video=args.c1_video_dir)
+    cam0 = Camera(0, args.camera0_name, camera_matrix=None, calibration_video=args.c0_cali_video)
+    cam1 = Camera(1, args.camera1_name, camera_matrix=None, calibration_video=args.c1_cali_video)
 
     cams = [cam0, cam1]
     video_dirs = [args.c1_video_dir, args.c2_video_dir]
@@ -59,7 +59,7 @@ def main():
     action_sequence = json.load(open(action_json_dir, 'r'))['actions']
 
     world.analyse(action_sequence)
-    world.show_result()
+    # world.show_result()
 
 
 

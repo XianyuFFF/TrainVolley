@@ -51,14 +51,6 @@ def predict_new_pose(locs):
         print(e)
 
 
-        
-
-
-
-
-
-
-
 
 def parabola_3d_locs(init_3d_locs):
     res_traj = {}
