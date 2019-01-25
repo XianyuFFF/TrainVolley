@@ -10,6 +10,7 @@ from ActionAnylsis import merge_action_sequence
 from ActionAnylsis import underhand_server
 from ActionAnylsis.underhand_server.determine import deter_throw_ball_hand
 from utils.path_parser import *
+from utils.helper import get_file_name
 
 # from UI.show_video import e5App
 
@@ -30,18 +31,18 @@ class World:
 
     def detection_and_reconstruct(self):
         for i, video_dir in enumerate(self.videos):
-            video_name = video_dir[video_dir.rfind('/')+1:].split('.')[0]
+            video_name = get_file_name(video_dir)
 
             if not os.path.exists(detected_ball_json_dir(video_dir, self.ball_work_path, i)):
                 circle_file_dir = os.path.join(Asset_path, "circle.jpg")
                 ball_moments = Moments(circle_file_dir)
                 get_ball_loc_data(video_dir, self.ball_work_path, ball_moments, i)
 
-            if not os.path.exists(os.path.join(self.output_snippets_path, video_name)):
+            if not os.path.exists(os.path.join(self.output_snippets_path, 'snippets', video_name)):
                 get_openpose_data(video_dir, self.output_snippets_path)
 
-            self.player.player_skeletons.pack_json_skeleton(video_dir, self.output_snippets_path, i)
-            self.ball.trajectory.pack_json_ball(video_dir, self.ball_work_path, i)
+        self.player.player_skeletons.pack_json_skeleton(self.videos, self.output_snippets_path, self.cams)
+        self.ball.trajectory.pack_json_ball(self.videos, self.ball_work_path)
 
         # 3d reconstruct
         self.player.player_skeletons.reconstruct(self.cams, self.fundamental_matrix)

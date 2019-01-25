@@ -29,7 +29,8 @@ openpose_pose_keys = {0: "nose",
                       22: "right_big_toe",
                       23: "right_small_toe",
                       24: "right_heel",
-                      25: "back_ground"}
+                      # 25: "back_ground"
+                      }
 
 class PlayerSkeleton:
     def __init__(self):
@@ -38,7 +39,6 @@ class PlayerSkeleton:
     def reconstruct_3d(self, cams, fundamental_matrix):
         self.pose_3d = Pose3d()
         for skeleton_key in openpose_pose_keys.values():
-
             if sum(getattr(self.skeleton2ds[0], skeleton_key)) < 0 or sum(
                     getattr(self.skeleton2ds[1], skeleton_key)) < 0:
                 continue
@@ -80,7 +80,7 @@ class PlayerSkeleton:
 class Pose2d:
     def __init__(self, keypoints):
         for i in range(0, len(keypoints), 3):
-            key = openpose_pose_keys[i]
+            key = openpose_pose_keys[i//3]
             setattr(self, key, [keypoints[i], keypoints[i + 1]])
             setattr(self, '{}_score', keypoints[i + 2])
 

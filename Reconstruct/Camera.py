@@ -8,10 +8,10 @@ import os
 
 class CameraMatrix:
     def __init__(self, K, r_vec, t_vec, dist_coefs):
-        self.K = np.array(K, dtype=np.float32)
-        self.r_vec = np.array(r_vec, dtype=np.float32)
-        self.t_vec = np.array(t_vec, dtype=np.float32)
-        self.dist_coefs = np.array([], dtype=np.float32)
+        self.K = np.asarray(K, dtype=np.float32)
+        self.r_vec = np.asarray(r_vec, dtype=np.float32)
+        self.t_vec = np.asarray(t_vec, dtype=np.float32)
+        self.dist_coefs = np.asarray(dist_coefs, dtype=np.float32)
         self.proj_mat = self.init_project_mat()
 
     def init_project_mat(self):
@@ -27,12 +27,13 @@ class CameraMatrix:
 
 
 class Camera:
-    def __init__(self, id, name, camera_matrix, calibration_video):
+    def __init__(self, id, name, camera_matrix, calibration_video, land_marker):
         self.id = id
         self.name = name
         self.camera_matrix = camera_matrix
         self.camera_info_json_dir = get_camera_info_dir(self.id, self.name)
         self.calibration_video = calibration_video
+        self.land_marker = land_marker
 
         if os.path.exists(self.camera_info_json_dir):
             self.pack_json_camera()
@@ -50,14 +51,44 @@ class Camera:
         with open(self.camera_info_json_dir, 'r') as f:
             camera_info = json.load(f)
         camera_matrix = camera_info['camera_matrix']
-        r_vec = np.array(camera_info['r_vet'], dtype=np.float32)
-        R, _ = cv2.Rodrigues(r_vec)
-        t_vec = camera_info['t_vet']
         dist_coefs = camera_info['dist_coefs']
+
+        if not camera_info.get('r_vec') or not camera_info.get('t_vec'):
+            try:
+                r_vec, t_vec = self.camera_world(camera_matrix, dist_coefs)
+                camera_info['r_vec'] = r_vec.tolist()
+                camera_info['t_vec'] = t_vec.tolist()
+                R, _ = cv2.Rodrigues(r_vec)
+            except FileNotFoundError as e:
+                print('{}: marker file {} has some problem'.format(e, self.land_marker))
+        else:
+            r_vec = np.array(camera_info['r_vec'], dtype=np.float32)
+            R, _ = cv2.Rodrigues(r_vec)
+            t_vec = np.array(camera_info['t_vec'], dtype=np.float32)
+
         # dist_coefs = np.zeros((1, 5))
         # if projection wrong,try switch dist_coefs to zeros
-        setattr(self, 'camera_matrix', CameraMatrix(camera_matrix, r_vec,t_vec, dist_coefs))
+        setattr(self, 'camera_matrix', CameraMatrix(camera_matrix, r_vec, t_vec, dist_coefs))
         setattr(self.camera_matrix, 'R', R)
+
+        with open(self.camera_info_json_dir, 'w') as f:
+            json.dump(camera_info, f)
+
+    def camera_world(self, camera_matrix, dist_coefs):
+        image_floor_points, object_floor_points = self.load_land_marker()
+        _, r_vet, t_vet = cv2.solvePnP(object_floor_points, image_floor_points,
+                                       np.asarray(camera_matrix, dtype=np.float32),
+                                       np.asarray(dist_coefs, dtype=np.float32)
+                                       )
+        return r_vet, t_vet
+
+    def load_land_marker(self):
+        with open(self.land_marker, 'r') as f:
+            content = json.load(f)
+        p2ds = np.asarray(content[self.name]["p_2ds"], dtype=np.float32).reshape((4, 1, 2))
+        p3ds = np.asarray(content[self.name]["p_3ds"], dtype=np.float32).reshape((4, 1, 3))
+        return p2ds, p3ds
+
 
     def transto2d(self, points):
         return cv2.projectPoints(points, self.camera_matrix.R, self.camera_matrix.T, self.camera_matrix.K,

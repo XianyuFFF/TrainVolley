@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import json
 from Player.Skeleton import Pose2d
+from utils.helper import get_file_name
 
 
 class PlayerSkeletonSequence:
@@ -20,23 +21,27 @@ class PlayerSkeletonSequence:
             skeleton.reconstruct_3d(cams, fundamental_matrix)
 
     # it can only solve the problem when # of people is 1
-    def pack_json_skeleton(self, video_dir, output_snippets_path, cam_id):
-        video_name = video_dir[video_dir.rfind('/') + 1:].split('.')[0]
-        snippets_dir = os.path.join(output_snippets_path, video_name)
+    def pack_json_skeleton(self, videos, output_snippets_path, cams):
+        current_skeleton = PlayerSkeleton()
 
-        p = Path(snippets_dir)
-        for path in p.glob(video_name + '*.json'):
-            json_path = str(path)
-            print(path)
-            frame_id = int(path.stem.split('_')[-2])
-            current_skeleton = PlayerSkeleton()
-            data = json.load(open(json_path))
-            person = data['people'][0]
+        for i, video_dir in enumerate(videos):
+            video_name = get_file_name(video_dir)
+            snippets_dir = os.path.join(output_snippets_path, 'snippets', video_name)
 
-            keypoints = person['pose_keypoints_2d']
-            pose2d = Pose2d(keypoints)
-            current_skeleton.skeleton2ds[cam_id] = pose2d
-            self.skeletons[frame_id] = current_skeleton
+            p = Path(snippets_dir)
+            for path in p.glob(video_name + '*.json'):
+                json_path = str(path)
+                print(path)
+                frame_id = int(path.stem.split('_')[-2])
+
+                data = json.load(open(json_path))
+                person = data['people'][0]
+
+                keypoints = person['pose_keypoints_2d']
+
+                pose2d = Pose2d(keypoints)
+                current_skeleton.skeleton2ds[cams[i].id] = pose2d
+                self.skeletons[frame_id] = current_skeleton
 
 
 class Player:
