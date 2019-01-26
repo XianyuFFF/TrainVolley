@@ -11,6 +11,7 @@ from ActionAnylsis import underhand_server
 from ActionAnylsis.underhand_server.determine import deter_throw_ball_hand
 from utils.path_parser import *
 from utils.helper import get_file_name
+from Court import Court, Net
 
 # from UI.show_video import e5App
 
@@ -28,6 +29,7 @@ class World:
         self.ball = Ball()
         self.ball_work_path = ball_work_path
         self.fps = fps
+        self.court = Court()
 
     def detection_and_reconstruct(self):
         for i, video_dir in enumerate(self.videos):
@@ -68,12 +70,14 @@ class World:
         if action.action_name == 'underhand_server':
             anlysis_result = self.underhand_server_anlysis(action)
 
-        if action.action_name == 'jump_floating_server':
+        elif action.action_name == 'jump_floating_server':
             anlysis_result = self.jump_floating_server_analysis(action)
+
+        return anlysis_result
 
     def underhand_server_anlysis(self, action):
         start_frame = action.start_frame
-        end_frame = action.start_frame
+        end_frame = action.end_frame
 
         skeleton3ds = self.player.player_skeletons.sequence_based_time(start_frame, end_frame)
         ball_sequence = self.ball.trajectory.get_ball_loc_sequence(start_frame, end_frame)
@@ -81,24 +85,29 @@ class World:
         throw_ball_hand = deter_throw_ball_hand(skeleton3ds, ball_sequence)
 
         begin_time = underhand_server.deter_begin_frame(skeleton3ds, throw_ball_hand)
-        beat_time = underhand_server.deter_beat_frame(skeleton3ds, throw_ball_hand)
-        recover_time = underhand_server.deter_beat_frame(skeleton3ds, throw_ball_hand)
+
+        beat_time = underhand_server.deter_beat_frame(skeleton3ds, throw_ball_hand, ball_sequence, begin_time)
+
+        # not really needed
+        # recover_time = underhand_server.deter_beat_frame(skeleton3ds, throw_ball_hand, ball_sequence, begin_time)
 
         ball_land_time = underhand_server.deter_ball_land_frame(ball_sequence, beat_time)
 
-        if throw_ball_hand == 'left':
-            throw_ball_shoulder_angle = skeleton3ds[begin_time].left_shoulder_angle
-            beat_ball_shoulder_angle = skeleton3ds[beat_time].right_shoulder_angle
-            recover_shoulder_angle = skeleton3ds[recover_time].right_shoulder_angle
+        print(throw_ball_hand)
 
+        if throw_ball_hand == 'left':
+            throw_ball_shoulder_angle = skeleton3ds[begin_time].left_shoulder_angle()
+            beat_ball_shoulder_angle = skeleton3ds[beat_time].right_shoulder_angle()
+            # recover_shoulder_angle = skeleton3ds[recover_time].right_shoulder_angle()
         else:
-            throw_ball_shoulder_angle = skeleton3ds[begin_time].right_shoulder_angle
-            beat_ball_shoulder_angle = skeleton3ds[beat_time].left_shoulder_angle
-            recover_shoulder_angle = skeleton3ds[recover_time].left_shoulder_angle
+            throw_ball_shoulder_angle = skeleton3ds[begin_time].right_shoulder_angle()
+            beat_ball_shoulder_angle = skeleton3ds[beat_time].left_shoulder_angle()
+            # recover_shoulder_angle = skeleton3ds[recover_time].left_shoulder_angle()
 
         throw_ball_body_ground_angle = skeleton3ds[begin_time].body_ground_angle()
         beat_ball_body_ground_angle = skeleton3ds[beat_time].body_ground_angle()
-        recover_body_ground_angle = skeleton3ds[recover_time].body_ground_angle()
+
+        # recover_body_ground_angle = skeleton3ds[recover_time].body_ground_angle()
 
         throw_ball_time_cost = (beat_time - begin_time) * (1 / self.fps)
         throw_ball_hight = ball_sequence[begin_time].position_3d.center[2]
@@ -106,24 +115,27 @@ class World:
 
         throw_hight = abs(throw_ball_hight - beat_ball_hight)
 
-        player_position = np.average([np.asarray(skeleton3ds[recover_time].pose_3d.left_heel),
-                                      np.asarray(skeleton3ds[recover_time].pose_3d.right_heel)],
-                                     axis=0)
+        # player_position = np.average([np.asarray(skeleton3ds[recover_time].pose_3d.left_heel),
+        #                               np.asarray(skeleton3ds[recover_time].pose_3d.right_heel)],
+        #                              axis=0)
+
+        fouled = self.player.foul_detection(start_frame, begin_time, beat_time, self.court)
 
         ball_land_position = ball_sequence[ball_land_time].position_3d.center
         ball_land_delta = np.asarray(ball_sequence[ball_land_time - 2].position_3d.center) - np.asarray(
             ball_sequence[ball_land_time - 1].position_3d.center)
         ball_land_speed = np.sqrt(ball_land_delta.dot(ball_land_delta)) / (1 / self.fps)
 
-        ball_beat_position = ball_sequence[beat_time].position.center
-        beat_land_delta = np.asarray(ball_land_position) - np.asarray(
-            ball_sequence[ball_land_time - 1].position_3d.center)
+        ball_beat_position = ball_sequence[beat_time].position_3d.center
+        beat_land_delta = np.asarray(ball_land_position) - np.asarray(ball_beat_position)
         ball_average_speed = np.sqrt(beat_land_delta.dot(beat_land_delta)) / (
                     (ball_land_time - beat_time) * 1 / self.fps)
 
         ball_beat_delta = np.asarray(ball_sequence[beat_time + 2].position_3d.center) - np.asarray(
             ball_sequence[beat_time + 1].position_3d.center)
         ball_beat_speed = np.sqrt(ball_beat_delta.dot(ball_beat_delta)) / (1 / self.fps)
+
+        ball_fly_time = (ball_land_time - beat_time) * (1/ self.fps)
 
         # TODO
         over_net_time = 0
@@ -176,23 +188,25 @@ class World:
             }
         }
 
-        recover_info = {
-            "Start_time": start_frame + recover_time,
-            "Player info": {
-                "Recover body ground angle": recover_body_ground_angle,
-                "Recover shoulder angle": recover_shoulder_angle,
-                "Player position": player_position
-            }
-        }
+        # recover_info = {
+        #     "Start_time": start_frame + recover_time,
+        #     "Player info": {
+        #         "Recover body ground angle": recover_body_ground_angle,
+        #         "Recover shoulder angle": recover_shoulder_angle,
+        #         "Player position": player_position
+        #     }
+        # }
 
         analysis_result = {
             "Start_time": start_frame,
             "End_time": end_frame,
+            "Fouled": fouled,
+            "BallFlyTime": ball_fly_time,
             "Stages": {
                 "Throw ball": throw_ball_time_info,
                 "Beat ball": beat_ball_info,
                 "Over net": over_net_info,
-                "Recover": recover_info,
+                # "Recover": recover_info,
                 "Land": land_ball_info
             }
         }

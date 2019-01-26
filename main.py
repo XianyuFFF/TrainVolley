@@ -4,6 +4,7 @@ from utils.path_parser import get_camera_info_dir
 from utils.openpose import json_pack
 import argparse
 import os
+from ActionAnylsis.Action import Action
 import json
 
 Asset_path = 'asset'
@@ -50,6 +51,11 @@ def main():
 
     world = World(cams, video_dirs, args.openpose_work_path, args.ball_work_path, args.fps)
     world.detection_and_reconstruct()
+
+    demo_action = Action(start_frame=0, end_frame=230, action_name='underhand_server')
+
+    result = world.analyse_action(demo_action)
+    print(result)
 
     # now we are not really use action recognize module
     # action_json_dir = os.path.join(args.openpose_work__path, "actions.json")

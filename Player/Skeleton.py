@@ -43,10 +43,13 @@ class PlayerSkeleton:
                     getattr(self.skeleton2ds[1], skeleton_key)) < 0:
                 continue
             else:
-                setattr(self.pose_3d, skeleton_key, transto3d(getattr(self.skeleton2ds[cams[0].id], skeleton_key),
+                skeleton_loc = transto3d(getattr(self.skeleton2ds[cams[0].id], skeleton_key),
                                                               getattr(self.skeleton2ds[cams[1].id], skeleton_key),
                                                               cams[0], cams[1], fundamental_matrix
-                                                              )
+                                                              )[0]
+
+                setattr(self.pose_3d, skeleton_key,
+                            [skeleton_loc[0], skeleton_loc[1], abs(skeleton_loc[2])]
                         )
 
     def left_shoulder_angle(self):

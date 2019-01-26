@@ -12,6 +12,7 @@ class PlayerSkeletonSequence:
 
     def sequence_based_time(self, begin_frame, end_frame):
         skeleton_sequence = []
+
         for i in range(begin_frame, end_frame+1):
             skeleton_sequence.append(self.skeletons[i])
         return skeleton_sequence
@@ -22,6 +23,7 @@ class PlayerSkeletonSequence:
 
     # it can only solve the problem when # of people is 1
     def pack_json_skeleton(self, videos, output_snippets_path, cams):
+
         current_skeleton = PlayerSkeleton()
 
         for i, video_dir in enumerate(videos):
@@ -31,7 +33,7 @@ class PlayerSkeletonSequence:
             p = Path(snippets_dir)
             for path in p.glob(video_name + '*.json'):
                 json_path = str(path)
-                print(path)
+                # print(path)
                 frame_id = int(path.stem.split('_')[-2])
 
                 data = json.load(open(json_path))
@@ -39,9 +41,14 @@ class PlayerSkeletonSequence:
 
                 keypoints = person['pose_keypoints_2d']
 
-                pose2d = Pose2d(keypoints)
-                current_skeleton.skeleton2ds[cams[i].id] = pose2d
-                self.skeletons[frame_id] = current_skeleton
+                if not self.skeletons.get(frame_id):
+                    current_skeleton = PlayerSkeleton()
+                    pose2d = Pose2d(keypoints)
+                    current_skeleton.skeleton2ds[cams[i].id] = pose2d
+                    self.skeletons[frame_id] = current_skeleton
+                else:
+                    pose2d = Pose2d(keypoints)
+                    self.skeletons[frame_id].skeleton2ds[cams[i].id] = pose2d
 
 
 class Player:
@@ -52,8 +59,8 @@ class Player:
         return
 
     # if player's feet stay in court, it will be foul.
-    def foul_detection(self, start_time, beat_time, court):
-        detected_skeleton_sequence = self.player_skeletons.sequence_based_time(start_time, beat_time)
+    def foul_detection(self, action_start_time, throw_time, beat_time, court):
+        detected_skeleton_sequence = self.player_skeletons.sequence_based_time(throw_time, beat_time)
         foot_keys = ["left_big_toe", "right_big_toe", "left_small_toe",
                      "right_small_toe", "left_big_heel", "right_big_heel"]
         for i, skeleton3d in enumerate(detected_skeleton_sequence):

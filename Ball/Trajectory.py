@@ -37,7 +37,7 @@ class Trajectory:
 
     def reconstruct(self, cams, fundamental_matrix):
         for ball_position in self.ball_position_sequence.values():
-            ball_position.reconstruct_3d(cams, fundamental_matrix)
+            ball_position.reconstruct_3d(cams, fundamental_matrix=None)
 
     def optimize(self):
         X, Y, Z = [], [], []
@@ -53,13 +53,13 @@ class Trajectory:
 
         centers = [(filter_x[i], filter_y[i], filter_z[i]) for i in range(len(filter_x)) ]
 
-        for i, k in enumerate(map(int, self.ball_position_sequence.keys())):
+        for i, k in enumerate(sorted(map(int, self.ball_position_sequence.keys()))):
             self.ball_position_sequence[str(k)].position_3d = Position3d(centers[i])
 
     def get_ball_loc_sequence(self, begin_frame, end_frame):
         ball_loc_sequence = []
         for i in range(begin_frame, end_frame+1):
-            ball_loc_sequence.append(self.ball_position_sequence[i])
+            ball_loc_sequence.append(self.ball_position_sequence[str(i)])
         return ball_loc_sequence
 
     def show_trajectory(self):
@@ -127,7 +127,8 @@ class Position3d:
     def __init__(self, center):
         self.X = center[0]
         self.Y = center[1]
-        self.Z = -center[2]
+        self.Z = abs(center[2])
+        self.center = [self.X, self.Y, self.Z]
 
     def __str__(self):
         return "({} {} {})".format(self.X, self.Y, self.Z)

@@ -22,7 +22,7 @@ class CameraMatrix:
             [m[0, 0], m[0, 1], m[0, 2], t[0, 0]],
             [m[1, 0], m[1, 1], m[1, 2], t[1, 0]],
             [m[2, 0], m[2, 1], m[2, 2], t[2, 0]]
-        ])
+        ], dtype=np.float32)
         return rt_mat
 
 
@@ -69,7 +69,7 @@ class Camera:
         # dist_coefs = np.zeros((1, 5))
         # if projection wrong,try switch dist_coefs to zeros
         setattr(self, 'camera_matrix', CameraMatrix(camera_matrix, r_vec, t_vec, dist_coefs))
-        setattr(self.camera_matrix, 'R', R)
+        setattr(self.camera_matrix, 'R', np.asarray(R, dtype=np.float32))
 
         with open(self.camera_info_json_dir, 'w') as f:
             json.dump(camera_info, f)
@@ -91,7 +91,9 @@ class Camera:
 
 
     def transto2d(self, points):
-        return cv2.projectPoints(points, self.camera_matrix.R, self.camera_matrix.T, self.camera_matrix.K,
+        points = np.asarray(points, dtype=np.float32)
+
+        return cv2.projectPoints(points, self.camera_matrix.r_vec, self.camera_matrix.t_vec.reshape((1,3)), self.camera_matrix.K,
                                  self.camera_matrix.dist_coefs)
 
     def find_homograph_matrix(self, other_camera, plane_norm):
