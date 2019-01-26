@@ -9,7 +9,7 @@ def transto3d(image1_point, image2_point, camera1, camera2, funamental_matrix):
 
     # print("before correctMatches: p1:{} p2:{}".format(p1, p2))
 
-    p1, p2 = cv2.correctMatches(funamental_matrix, p1, p2)
+    # p1, p2 = cv2.correctMatches(funamental_matrix, p1, p2)
     # print("after correctMatches: p1:{} p2:{}".format(p1, p2))
 
     X = cv2.triangulatePoints(camera1.camera_matrix.proj_mat, camera2.camera_matrix.proj_mat, p1, p2)

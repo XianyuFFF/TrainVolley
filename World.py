@@ -48,6 +48,11 @@ class World:
         self.player.player_skeletons.reconstruct(self.cams, self.fundamental_matrix)
         self.ball.trajectory.reconstruct(self.cams, self.fundamental_matrix)
 
+        # visual ball trajectory
+        # self.ball.trajectory.show_trajectory()
+        self.ball.trajectory.optimize()
+
+
     def analyse(self, action_sequence):
         actions = merge_action_sequence(action_sequence)
 
