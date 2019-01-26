@@ -12,8 +12,8 @@ from ActionAnylsis.underhand_server.determine import deter_throw_ball_hand
 from utils.path_parser import *
 from utils.helper import get_file_name
 from Court import Court, Net
+import json
 
-# from UI.show_video import e5App
 
 Asset_path = 'asset'
 
@@ -218,20 +218,51 @@ class World:
 
         return action_result
 
-    def show_result(self):
+    def save_demo_result(self, analysis_result):
         video_dir = self.videos[0]
-        video_jsa = self.videos[0].replace('mp4', 'jsa')
+        video_jsa = video_dir.replace('mp4', 'jsa')
+        video_jso = video_dir.replace('mp4', 'json')
+
+        # with open(video_jso, 'w') as f:
+        #     json.dump(analysis_result, f)
 
         contents = []
         with open(video_jsa, 'w') as f:
-            for i, analysis_result in enumerate(getattr(self, 'analysis_results')):
-                action_begin = analysis_result['Start_time']
-                action_end = analysis_result['End_time']
-                stage_num = len(analysis_result['Stages'])
-                for j, action_stage in enumerate(analysis_result):
-                    time = action_stage['Start_time'] * (1 / self.fps)
-                    duration = abs(action_begin - action_end) / (stage_num * 1.5)
-                    text = str(action_stage).replace('{', '\n').replace(',', '\n').replace('}', '\n')
-                    contents.append({"start": time, "duration": duration, "text": text})
-        f.write(str(contents))
-        e5App(video_dir).run()
+
+            action_begin = analysis_result['Start_time']
+            action_end = analysis_result['End_time']
+            stage_num = len(analysis_result['Stages'])
+
+            print(analysis_result['Stages'])
+
+            for stage_name, action_stage in analysis_result['Stages'].items():
+                time = int(action_stage['Start_time']) * (1 / self.fps)
+                duration = abs(action_begin - action_end) / (stage_num * 1.5) * (1 / self.fps)
+                text = str(action_stage)
+                contents.append("{start: {}, duration:{}, text: {}\}".format(time, duration, text))
+            f.write(str(contents))
+
+        #
+        # command_line = 'python3 show_video.py -v {}'.format(video_dir)
+        # os.system(command_line)
+
+
+    # def show_result(self):
+    #     video_dir = self.videos[0]
+    #     video_jsa = self.videos[0].replace('mp4', 'jsa')
+    #
+    #     contents = []
+    #     with open(video_jsa, 'w') as f:
+    #         for i, analysis_result in enumerate(getattr(self, 'analysis_results')):
+    #             action_begin = analysis_result['Start_time']
+    #             action_end = analysis_result['End_time']
+    #             stage_num = len(analysis_result['Stages'])
+    #             for j, action_stage in enumerate(analysis_result):
+    #                 time = action_stage['Start_time'] * (1 / self.fps)
+    #                 duration = abs(action_begin - action_end) / (stage_num * 1.5)
+    #                 text = str(action_stage).replace('{', '\n').replace(',', '\n').replace('}', '\n')
+    #                 contents.append({"start": time, "duration": duration, "text": text})
+    #     f.write(str(contents))
+    #
+    #     command_line = 'python3 UI/show_video.py -v {}'.format(self.videos[0])
+    #     os.system(command_line)

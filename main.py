@@ -55,6 +55,7 @@ def main():
     demo_action = Action(start_frame=0, end_frame=230, action_name='underhand_server')
 
     result = world.analyse_action(demo_action)
+    world.save_demo_result(result)
     print(result)
 
     # now we are not really use action recognize module
