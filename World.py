@@ -223,10 +223,12 @@ class World:
         video_jsa = video_dir.replace('mp4', 'jsa')
         video_jso = video_dir.replace('mp4', 'json')
 
+        # TODO
         # with open(video_jso, 'w') as f:
         #     json.dump(analysis_result, f)
 
         contents = []
+
         with open(video_jsa, 'w') as f:
 
             action_begin = analysis_result['Start_time']
@@ -239,8 +241,8 @@ class World:
                 time = int(action_stage['Start_time']) * (1 / self.fps)
                 duration = abs(action_begin - action_end) / (stage_num * 1.5) * (1 / self.fps)
                 text = str(action_stage)
-                contents.append("{start: {}, duration:{}, text: {}\}".format(time, duration, text))
-            f.write(str(contents))
+                # contents.append({start: {}, duration:{}, text: \}".format(time, duration, text))
+            # f.write(str(contents))
 
         #
         # command_line = 'python3 show_video.py -v {}'.format(video_dir)
